@@ -1,43 +1,195 @@
-"use client";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import MapView, { Callout, Marker } from "react-native-maps";
+import { supabase } from "./lib/supabase";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+interface Report {
+  id: string | number;
+  created_at: string;
+  title?: string;
+  description?: string;
+  town?: string;
+  latitude?: number;
+  longitude?: number;
+}
 
-import "leaflet/dist/leaflet.css";
+export default function MapScreen() {
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const icon = L.icon({
-  iconUrl: "/marker-icon.png",
-  iconRetinaUrl: "/marker-icon.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("reports")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-export default function MapaInteractivo() {
+        if (error) {
+          console.error("Error fetching reports:", error.message);
+        } else if (data) {
+          setReports(data);
+        }
+      } catch (error) {
+        console.error("Unexpected map error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>
+          Cargando mapa...
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <div className="w-full h-[600px] rounded-2xl overflow-hidden">
-      <MapContainer
-        center={[18.2208, -66.5901]}
-        zoom={9}
-        scrollWheelZoom={true}
-        style={{ height: "100%", width: "100%" }}
+    <SafeAreaView style={styles.container}>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: 18.2208,
+          longitude: -66.5901,
+          latitudeDelta: 3.2,
+          longitudeDelta: 3.2,
+        }}
       >
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        {reports
+          .filter(
+            (report) =>
+              typeof report.latitude === "number" &&
+              typeof report.longitude === "number"
+          )
+          .map((report) => (
+            <Marker
+              key={report.id.toString()}
+              coordinate={{
+                latitude: report.latitude!,
+                longitude: report.longitude!,
+              }}
+              title={report.title || "Reporte de agua"}
+            >
+              <Callout>
+                <View style={styles.callout}>
+                  <Text style={styles.calloutTitle}>
+                    {report.title || "Reporte de agua"}
+                  </Text>
 
-        <Marker position={[18.4655, -66.1057]} icon={icon}>
-          <Popup>
-            <strong>San Juan</strong>
-            <br />
-            Reporte de ejemplo
-          </Popup>
-        </Marker>
-      </MapContainer>
-    </div>
+                  <Text style={styles.calloutTown}>
+                    📍 {report.town || "Puerto Rico"}
+                  </Text>
+
+                  {report.description ? (
+                    <Text style={styles.calloutDescription}>
+                      {report.description}
+                    </Text>
+                  ) : null}
+                </View>
+              </Callout>
+            </Marker>
+          ))}
+      </MapView>
+
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          🗺️ Reportes de AguaPR
+        </Text>
+
+        <Text style={styles.headerSubtitle}>
+          {reports.length === 0
+            ? "No hay reportes todavía"
+            : `${reports.length} reporte${
+                reports.length === 1 ? "" : "s"
+              }`}
+        </Text>
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+
+  map: {
+    flex: 1,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#EEF4FF",
+  },
+
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#475569",
+  },
+
+  header: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    right: 20,
+    backgroundColor: "white",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    elevation: 5,
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1D4ED8",
+    textAlign: "center",
+  },
+
+  headerSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#64748B",
+    textAlign: "center",
+  },
+
+  callout: {
+    width: 220,
+    padding: 8,
+  },
+
+  calloutTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginBottom: 5,
+  },
+
+  calloutTown: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2563EB",
+    marginBottom: 5,
+  },
+
+  calloutDescription: {
+    fontSize: 13,
+    color: "#475569",
+  },
+});
