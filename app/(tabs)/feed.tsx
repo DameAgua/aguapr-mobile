@@ -1,10 +1,10 @@
-import * as MailComposer from "expo-mail-composer";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Linking,
   Pressable,
   RefreshControl,
   SafeAreaView,
@@ -68,28 +68,20 @@ export default function FeedScreen() {
     fetchReports();
   };
 
-  const shareReportViaEmail = async (
-    report: ReportItem,
-    targetEmail: string,
-    targetName: string
-  ) => {
-    const isAvailable = await MailComposer.isAvailableAsync();
+const shareReportViaEmail = async (
+  report: ReportItem,
+  targetEmail: string,
+  targetName: string
+) => {
+  const locationText = report.town || report.pueblo || "Puerto Rico";
 
-    if (!isAvailable) {
-      Alert.alert(
-        "Correo no disponible",
-        "Asegúrate de tener una cuenta de correo configurada en tu dispositivo."
-      );
-      return;
-    }
+  const subject = `🚨 Alerta de AguaPR: ${report.problem_type} en ${locationText}`;
 
-    const locationText = report.town || report.pueblo || "Puerto Rico";
-    const subject = `🚨 Alerta de AguaPR: ${report.problem_type} en ${locationText}`;
-    const dateFormatted = report.created_at
-      ? new Date(report.created_at).toLocaleString("es-PR")
-      : new Date().toLocaleString("es-PR");
+  const dateFormatted = report.created_at
+    ? new Date(report.created_at).toLocaleString("es-PR")
+    : new Date().toLocaleString("es-PR");
 
-    const body = `Estimado equipo de ${targetName},
+  const body = `Estimado equipo de noticias,
 
 Le escribo para reportar una situación crítica con el servicio de agua potable registrada a través de la aplicación AguaPR.
 
@@ -103,12 +95,32 @@ Agradecemos su atención para darle visibilidad a esta problemática que afecta 
 Atentamente,
 Comunidad de AguaPR`;
 
-    await MailComposer.composeAsync({
-      recipients: [targetEmail],
-      subject: subject,
-      body: body,
-    });
-  };
+  const mailtoUrl =
+    `mailto:${targetEmail}` +
+    `?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(body)}`;
+
+  try {
+    const canOpen = await Linking.canOpenURL(mailtoUrl);
+
+    if (!canOpen) {
+      Alert.alert(
+        "Correo no disponible",
+        "No se encontró una aplicación de correo configurada en tu dispositivo."
+      );
+      return;
+    }
+
+    await Linking.openURL(mailtoUrl);
+  } catch (error) {
+    console.log("Error opening email:", error);
+
+    Alert.alert(
+      "Error",
+      "No se pudo abrir la aplicación de correo."
+    );
+  }
+};
 
   const handleEmailPress = (reportItem: ReportItem) => {
     Alert.alert(
