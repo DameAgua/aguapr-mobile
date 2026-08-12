@@ -1,4 +1,4 @@
-{
+npx expo start --lan{
   "buildCommand": "npx expo export -p web",
   "outputDirectory": "dist"
 }
