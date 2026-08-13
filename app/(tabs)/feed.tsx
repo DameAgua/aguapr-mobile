@@ -41,11 +41,12 @@ export default function FeedScreen() {
 
   const fetchReports = async () => {
     try {
-      const { data, error } = await supabase
+         const { data, error } = await supabase
         .from("reports")
-        .select("*")
+        .select(
+          'id, problem_type, "Pueblo o Municipalidad", description, created_at, status'
+        )
         .order("created_at", { ascending: false });
-
       if (error) {
         Alert.alert("Error de Supabase", error.message);
       } else if (data) {

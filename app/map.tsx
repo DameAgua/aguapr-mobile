@@ -27,10 +27,11 @@ export default function MapScreen() {
     const fetchReports = async () => {
       try {
         const { data, error } = await supabase
-          .from("reports")
-          .select("*")
-          .order("created_at", { ascending: false });
-
+  .from("reports")
+  .select(
+    'id, problem_type, pueblo:"Pueblo o Municipalidad", description, latitude, longitude, created_at, status'
+  )
+  .order("created_at", { ascending: false });
         if (error) {
           console.error("Error fetching reports:", error.message);
         } else if (data) {
