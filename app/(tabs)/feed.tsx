@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Modal,
   Linking,
   Pressable,
   RefreshControl,
@@ -12,15 +13,15 @@ import {
   Text,
   View,
 } from "react-native";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../../lib/supabase";
 
 // Media Outlet Directory
 const MEDIA_EMAIL_OPTIONS = [
   { name: "WAPA TV (NotiCentro)", email: "noticentro@wapa.tv" },
   { name: "Telemundo PR (Telenoticias)", email: "telenoticias@telemundopr.com" },
   { name: "TeleOnce (Las Noticias)", email: "lasnoticias@teleonce.com" },
-  { name: "El Nuevo Día / Primera Hora", email: "noticias@gfrmedia.com" },
-  { name: "San Juan Star", email: "newsdesk@sanjuanstar.com" },
+  { name: "El Nuevo Día", email: "redaccion@gfrmedia.com" },
+  { name: "Primera Hora", email: "historiasph@gfrmedia.com" },
 ];
 
 export interface ReportItem {
@@ -38,6 +39,8 @@ export default function FeedScreen() {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [mediaPickerVisible, setMediaPickerVisible] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
 
   const fetchReports = async () => {
     try {
@@ -124,21 +127,13 @@ Comunidad de AguaPR`;
 };
 
   const handleEmailPress = (reportItem: ReportItem) => {
-    Alert.alert(
-      "Enviar reporte a Prensa 📺",
-      "Selecciona el medio de comunicación al que deseas enviar esta alerta:",
-      [
-        ...MEDIA_EMAIL_OPTIONS.map((media) => ({
-          text: media.name,
-          onPress: () =>
-            shareReportViaEmail(reportItem, media.email, media.name),
-        })),
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-      ]
-    );
+    setSelectedReport(reportItem);
+    setMediaPickerVisible(true);
+  };
+
+  const closeMediaPicker = () => {
+    setMediaPickerVisible(false);
+    setSelectedReport(null);
   };
 
   const renderItem = ({ item }: { item: ReportItem }) => {
@@ -202,6 +197,57 @@ Comunidad de AguaPR`;
           }
         />
       )}
+
+      <Modal
+        visible={mediaPickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeMediaPicker}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.mediaModal}>
+            <Text style={styles.mediaModalTitle}>
+              Enviar reporte a Prensa 📺
+            </Text>
+
+            <Text style={styles.mediaModalSubtitle}>
+              Selecciona el medio de comunicación:
+            </Text>
+
+            {MEDIA_EMAIL_OPTIONS.map((media) => (
+              <Pressable
+                key={media.email}
+                style={styles.mediaOption}
+                onPress={() => {
+                  if (!selectedReport) return;
+
+                  const reportToSend = selectedReport;
+                  closeMediaPicker();
+
+                  shareReportViaEmail(
+                    reportToSend,
+                    media.email,
+                    media.name
+                  );
+                }}
+              >
+                <Text style={styles.mediaOptionText}>
+                  {media.name}
+                </Text>
+              </Pressable>
+            ))}
+
+            <Pressable
+              style={styles.cancelOption}
+              onPress={closeMediaPicker}
+            >
+              <Text style={styles.cancelOptionText}>
+                Cancelar
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
 
       <Pressable style={styles.backButton} onPress={() => router.back()}>
         <Text style={styles.backButtonText}>← Volver al Inicio</Text>
@@ -309,6 +355,54 @@ const styles = StyleSheet.create({
     color: "#64748B",
     marginTop: 40,
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  mediaModal: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    elevation: 10,
+  },
+  mediaModalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1E293B",
+    textAlign: "center",
+    marginBottom: 6,
+  },
+  mediaModalSubtitle: {
+    fontSize: 15,
+    color: "#64748B",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  mediaOption: {
+    backgroundColor: "#EEF4FF",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+  },
+  mediaOptionText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1D4ED8",
+    textAlign: "center",
+  },
+  cancelOption: {
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  cancelOptionText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#64748B",
+    textAlign: "center",
   },
   backButton: {
     paddingVertical: 14,

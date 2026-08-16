@@ -12,8 +12,8 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const handleTestPress = () => {
-    router.push("/feed");
-  };
+  router.push("/(tabs)/feed");
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -31,7 +31,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.7}
-            onPress={() => router.push("/report")}
+            onPress={() => router.push("/(tabs)/report")}
           >
             <Text style={styles.primaryButtonText}>
               🚰 Reportar problema de agua
