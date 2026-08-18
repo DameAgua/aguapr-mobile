@@ -8,7 +8,7 @@
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "updates": {
-      "enabled": "AIzaSyBfHT3klIBihulp-BqKFRdxSuhYSTR1AXI"
+      "enabled": false
     },
     "ios": {
       "supportsTablet": true,
