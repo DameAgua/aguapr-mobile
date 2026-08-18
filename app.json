@@ -8,7 +8,7 @@
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "updates": {
-      "enabled": false
+      "enabled": "AIzaSyBfHT3klIBihulp-BqKFRdxSuhYSTR1AXI"
     },
     "ios": {
       "supportsTablet": true,
@@ -20,15 +20,14 @@
     "android": {
       "package": "com.dameagua.aguapr",
       "adaptiveIcon": {
-        "backgroundColor": "#EEF4FF",
+        "backgroundColor": "#0757F7",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
       "config": {
         "googleMaps": {
-          "apiKey": "YOUR_ACTUAL_GOOGLE_MAPS_API_KEY_HERE"
+          "apiKey": "AIzaSyBedRtmvcTuR7Q46niZf0lfqiiH3EHZ_YA"
         }
       },
       "permissions": [
