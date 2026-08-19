@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -186,9 +188,15 @@ export default function ReportScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
       <ScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
       >
         <Text style={styles.icon}>🚰</Text>
 
@@ -290,6 +298,7 @@ export default function ReportScreen() {
           <Text style={styles.backButtonText}>← Volver</Text>
         </Pressable>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -302,6 +311,7 @@ const styles = StyleSheet.create({
 
   container: {
     padding: 24,
+    paddingBottom: 60,
     alignItems: "center",
   },
 
