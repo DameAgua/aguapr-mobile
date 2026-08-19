@@ -15,6 +15,9 @@
       "bundleIdentifier": "com.errefern.aguapr",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCeYtaXjlf0ZMrJYInTP6ILklD8FyhvNfM"
       }
     },
     "android": {
@@ -50,14 +53,7 @@
           "backgroundColor": "#EEF4FF"
         }
       ],
-      "expo-mail-composer",
-      [
-        "react-native-maps",
-        {
-          "androidGoogleMapsApiKey": "AIzaSyBedRtmvcTuR7Q46niZf0lfqiiH3EHZ_YA",
-          "iosGoogleMapsApiKey": "AIzaSyCeYtaXjlf0ZMrJYInTP6ILklD8FyhvNfM"
-        }
-      ]
+      "expo-mail-composer"
     ],
     "experiments": {
       "typedRoutes": true
