@@ -50,7 +50,14 @@
           "backgroundColor": "#EEF4FF"
         }
       ],
-      "expo-mail-composer"
+      "expo-mail-composer",
+      [
+        "react-native-maps",
+        {
+          "androidGoogleMapsApiKey": "AIzaSyBedRtmvcTuR7Q46niZf0lfqiiH3EHZ_YA",
+          "iosGoogleMapsApiKey": "AIzaSyCeYtaXjlf0ZMrJYInTP6ILklD8FyhvNfM"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

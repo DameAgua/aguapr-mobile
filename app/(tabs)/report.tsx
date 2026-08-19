@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
+import { getReporterId } from "../../lib/deviceId";
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -140,6 +141,8 @@ export default function ReportScreen() {
     try {
       setIsSubmitting(true);
 
+      const reporterId = await getReporterId();
+
  const { data, error } = await supabase.from("reports").insert([
   {
     problem_type: problem,
@@ -148,6 +151,7 @@ export default function ReportScreen() {
     latitude: latitude,
     longitude: longitude,
     status: "Pendiente",
+    reporter_id: reporterId,
   },
 ]);
 

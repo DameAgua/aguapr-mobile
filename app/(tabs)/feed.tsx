@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
+import { getReporterId } from "../../lib/deviceId";
 
 // Media Outlet Directory
 const MEDIA_EMAIL_OPTIONS = [
@@ -32,6 +33,7 @@ export interface ReportItem {
   description?: string;
   created_at?: string;
   status?: string;
+  reporter_id?: string | null;
 }
 
 export default function FeedScreen() {
@@ -41,13 +43,14 @@ export default function FeedScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [mediaPickerVisible, setMediaPickerVisible] = useState(false);
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
+  const [currentReporterId, setCurrentReporterId] = useState<string | null>(null);
 
   const fetchReports = async () => {
     try {
          const { data, error } = await supabase
         .from("reports")
         .select(
-          'id, problem_type, "Pueblo o Municipalidad", description, created_at, status'
+          'id, problem_type, "Pueblo o Municipalidad", description, created_at, status, reporter_id'
         )
         .order("created_at", { ascending: false });
       if (error) {
@@ -64,6 +67,10 @@ export default function FeedScreen() {
   };
 
   useEffect(() => {
+    getReporterId()
+      .then(setCurrentReporterId)
+      .catch((error) => console.log("Error loading reporter ID:", error));
+
     fetchReports();
   }, []);
 
@@ -138,6 +145,9 @@ Comunidad de AguaPR`;
 
   const renderItem = ({ item }: { item: ReportItem }) => {
     const locationName = item.town || item.pueblo || "Ubicación no especificada";
+    const canShare = Boolean(
+      currentReporterId && item.reporter_id === currentReporterId
+    );
 
     return (
       <View style={styles.card}>
@@ -159,10 +169,23 @@ Comunidad de AguaPR`;
         ) : null}
 
         <Pressable
-          style={styles.shareButton}
-          onPress={() => handleEmailPress(item)}
+          style={[
+            styles.shareButton,
+            !canShare && styles.shareButtonDisabled,
+          ]}
+          onPress={() => canShare && handleEmailPress(item)}
+          disabled={!canShare}
         >
-          <Text style={styles.shareButtonText}>✉️ Enviar a TV / Prensa</Text>
+          <Text
+            style={[
+              styles.shareButtonText,
+              !canShare && styles.shareButtonTextDisabled,
+            ]}
+          >
+            {canShare
+              ? "✉️ Enviar a TV / Prensa"
+              : "🔒 Solo quien reportó puede enviar"}
+          </Text>
         </Pressable>
       </View>
     );
@@ -349,6 +372,13 @@ const styles = StyleSheet.create({
     color: "#2563EB",
     fontWeight: "700",
     fontSize: 15,
+  },
+  shareButtonDisabled: {
+    backgroundColor: "#E2E8F0",
+    borderColor: "#CBD5E1",
+  },
+  shareButtonTextDisabled: {
+    color: "#64748B",
   },
   emptyText: {
     textAlign: "center",

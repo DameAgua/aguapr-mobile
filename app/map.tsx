@@ -97,6 +97,9 @@ export default function MapScreen() {
                 longitude: report.longitude,
               }}
               title={reportTitle}
+              pinColor="#DC2626"
+              tracksViewChanges={false}
+              zIndex={10}
             >
               <Callout style={styles.callout}>
                 <View>
