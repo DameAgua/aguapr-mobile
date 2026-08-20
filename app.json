@@ -21,8 +21,7 @@
       "package": "com.dameagua.aguapr",
       "adaptiveIcon": {
         "backgroundColor": "#0757F7",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
