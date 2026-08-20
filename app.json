@@ -15,9 +15,6 @@
       "bundleIdentifier": "com.errefern.aguapr",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "config": {
-        "googleMapsApiKey": "AIzaSyCeYtaXjlf0ZMrJYInTP6ILklD8FyhvNfM"
       }
     },
     "android": {
@@ -28,11 +25,6 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyBedRtmvcTuR7Q46niZf0lfqiiH3EHZ_YA"
-        }
-      },
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
