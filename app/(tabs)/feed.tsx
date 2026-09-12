@@ -21,7 +21,7 @@ const MEDIA_EMAIL_OPTIONS = [
   { name: "WAPA TV (NotiCentro)", email: "noticentro@wapa.tv" },
   { name: "Telemundo PR (Telenoticias)", email: "telenoticias@telemundopr.com" },
   { name: "TeleOnce (Las Noticias)", email: "lasnoticias@teleonce.com" },
-  { name: "El Nuevo Día", email: "redaccion@gfrmedia.com" },
+  { name: "El Nuevo Día (Comunicaciones)", email: "juan.guma@gfrpr.com" },
   { name: "Primera Hora", email: "historiasph@gfrmedia.com" },
 ];
 
