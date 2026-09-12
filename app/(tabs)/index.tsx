@@ -38,16 +38,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
-            onPress={() => router.push("/map")}
-          >
-            <Text style={styles.secondaryButtonText}>
-              🗺️ Ver mapa de reportes
-            </Text>
-          </TouchableOpacity>
-
           {/* --- Feed / Activity Button --- */}
           <TouchableOpacity
             style={styles.infoCard}
@@ -114,20 +104,6 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  secondaryButton: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#2563EB",
-  },
-  secondaryButtonText: {
-    color: "#1D4ED8",
     fontSize: 18,
     fontWeight: "700",
   },
