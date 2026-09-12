@@ -18,11 +18,15 @@ import { getReporterId } from "../../lib/deviceId";
 
 // Media Outlet Directory
 const MEDIA_EMAIL_OPTIONS = [
-  { name: "WAPA TV (NotiCentro)", email: "noticentro@wapa.tv" },
-  { name: "Telemundo PR (Telenoticias)", email: "telenoticias@telemundopr.com" },
-  { name: "TeleOnce (Las Noticias)", email: "lasnoticias@teleonce.com" },
-  { name: "El Nuevo Día (Comunicaciones)", email: "juan.guma@gfrpr.com" },
-  { name: "Primera Hora", email: "historiasph@gfrmedia.com" },
+  { name: "WAPA TV (NotiCentro)", email: "noticentro@wapa.tv", url: "" },
+  {
+    name: "Telemundo PR (Formulario oficial)",
+    email: "",
+    url: "https://www.telemundopr.com/envia-tus-comentarios/",
+  },
+  { name: "TeleOnce (Las Noticias)", email: "lasnoticias@teleonce.com", url: "" },
+  { name: "El Nuevo Día (Comunicaciones)", email: "juan.guma@gfrpr.com", url: "" },
+  { name: "Primera Hora", email: "historiasph@gfrmedia.com", url: "" },
 ];
 
 export interface ReportItem {
@@ -239,13 +243,23 @@ Comunidad de AguaPR`;
 
             {MEDIA_EMAIL_OPTIONS.map((media) => (
               <Pressable
-                key={media.email}
+                key={media.email || media.url}
                 style={styles.mediaOption}
                 onPress={() => {
                   if (!selectedReport) return;
 
                   const reportToSend = selectedReport;
                   closeMediaPicker();
+
+                  if (media.url) {
+                    Linking.openURL(media.url).catch(() => {
+                      Alert.alert(
+                        "Error",
+                        "No se pudo abrir el formulario oficial de Telemundo."
+                      );
+                    });
+                    return;
+                  }
 
                   shareReportViaEmail(
                     reportToSend,
