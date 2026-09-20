@@ -28,8 +28,7 @@ export default function PrivacyScreen() {
         <Text style={styles.text}>
           AguaPR solicita permiso para acceder a la ubicación del dispositivo
           mientras se utiliza la función para identificar el municipio. La
-          ubicación se utiliza para identificar la zona correspondiente y para
-          permitir que los reportes puedan aparecer en el mapa.
+          ubicación se utiliza para identificar la zona correspondiente.
         </Text>
 
         <Text style={styles.text}>
