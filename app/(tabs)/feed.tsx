@@ -38,6 +38,8 @@ export interface ReportItem {
   created_at?: string;
   status?: string;
   reporter_id?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export default function FeedScreen() {
@@ -78,9 +80,132 @@ export default function FeedScreen() {
     fetchReports();
   }, []);
 
+  useEffect(() => {
+    if (currentReporterId) { console.log("ID-DIRECTO:", currentReporterId);
+      console.log("AGUAPR CURRENT REPORTER ID:", currentReporterId);
+    }
+  }, [currentReporterId]);
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchReports();
+  };
+
+  const markAsResolved = async (report: ReportItem) => {
+    if (!currentReporterId) return;
+
+    Alert.alert(
+      "Marcar como RESUELTO",
+      "¿Confirmas que el problema de este reporte ya no existe?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sí, está resuelto",
+          onPress: async () => {
+            try {
+              const { data, error } = await supabase.rpc(
+                "mark_report_resolved",
+                {
+                  p_report_id: String(report.id),
+                  p_reporter_id: currentReporterId,
+                }
+              );
+
+              if (error) {
+                Alert.alert("Error", error.message);
+                return;
+              }
+
+              if (!data) {
+                Alert.alert(
+                  "No se pudo actualizar",
+                  "Solo quien creó el reporte puede marcarlo como resuelto."
+                );
+                return;
+              }
+
+              setReports((current) =>
+                current.map((item) =>
+                  item.id === report.id
+                    ? { ...item, status: "RESUELTO" }
+                    : item
+                )
+              );
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error?.message || "No se pudo marcar el reporte como resuelto."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const deleteReport = async (report: ReportItem) => {
+    if (!currentReporterId) return;
+
+    const createdAt = report.created_at
+      ? new Date(report.created_at).getTime()
+      : 0;
+
+    const isWithin24Hours =
+      createdAt > 0 &&
+      Date.now() - createdAt <= 24 * 60 * 60 * 1000;
+
+    if (!isWithin24Hours) {
+      Alert.alert(
+        "Ya pasó el plazo",
+        "Un reporte solo puede borrarse durante las primeras 24 horas."
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Borrar reporte",
+      "¿Seguro que quieres borrar este reporte? Esta acción no se puede deshacer.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Borrar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { data, error } = await supabase.rpc(
+                "delete_report_within_24h",
+                {
+                  p_report_id: String(report.id),
+                  p_reporter_id: currentReporterId,
+                }
+              );
+
+              if (error) {
+                Alert.alert("Error", error.message);
+                return;
+              }
+
+              if (!data) {
+                Alert.alert(
+                  "No se pudo borrar",
+                  "El reporte ya pasó las 24 horas o no pertenece a este dispositivo."
+                );
+                return;
+              }
+
+              setReports((current) =>
+                current.filter((item) => item.id !== report.id)
+              );
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error?.message || "No se pudo borrar el reporte."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
 const shareReportViaEmail = async (
@@ -162,6 +287,7 @@ Comunidad de AguaPR`;
 
         <Text style={styles.locationText}>📍 {locationName}</Text>
 
+
         {item.description ? (
           <Text style={styles.descriptionText}>{item.description}</Text>
         ) : null}
@@ -170,6 +296,58 @@ Comunidad de AguaPR`;
           <Text style={styles.dateText}>
             ⏱️ {new Date(item.created_at).toLocaleString("es-PR")}
           </Text>
+        ) : null}
+
+        {canShare &&
+        item.status !== "RESUELTO" &&
+        item.created_at &&
+        Date.now() - new Date(item.created_at).getTime() <=
+          24 * 60 * 60 * 1000 ? (
+          <Pressable
+            style={styles.editButton}
+            onPress={() =>
+              router.push({
+                pathname: "/report",
+                params: {
+                  editId: String(item.id),
+                  editProblem: item.problem_type,
+                  editLocation: item.town || item.pueblo || "",
+                  editDescription: item.description || "",
+                  editLatitude: item.latitude ? String(item.latitude) : "",
+                  editLongitude: item.longitude ? String(item.longitude) : "",
+                },
+              })
+            }
+          >
+            <Text style={styles.editButtonText}>
+              ✏️ Corregir el Reporte
+            </Text>
+          </Pressable>
+        ) : null}
+
+        {canShare && item.status !== "RESUELTO" ? (
+          <Pressable
+            style={styles.resolveButton}
+            onPress={() => markAsResolved(item)}
+          >
+            <Text style={styles.resolveButtonText}>
+              ✅ Marcar como RESUELTO
+            </Text>
+          </Pressable>
+        ) : null}
+
+        {canShare &&
+        item.created_at &&
+        Date.now() - new Date(item.created_at).getTime() <=
+          24 * 60 * 60 * 1000 ? (
+          <Pressable
+            style={styles.deleteButton}
+            onPress={() => deleteReport(item)}
+          >
+            <Text style={styles.deleteButtonText}>
+              🗑️ Borrar mi reporte
+            </Text>
+          </Pressable>
         ) : null}
 
         <Pressable
@@ -371,6 +549,48 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#94A3B8",
     marginBottom: 8,
+  },
+  editButton: {
+    backgroundColor: "#E0ECFF",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  editButtonText: {
+    color: "#1D4ED8",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  resolveButton: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#16A34A",
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    alignItems: "center",
+  },
+  resolveButtonText: {
+    color: "#15803D",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  deleteButton: {
+    backgroundColor: "#FEF2F2",
+    borderColor: "#DC2626",
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "#B91C1C",
+    fontWeight: "700",
+    fontSize: 15,
   },
   shareButton: {
     backgroundColor: "#EFF6FF",

@@ -1,6 +1,6 @@
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,11 +14,22 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { supabase } from "../../lib/supabase";
-import { getReporterId } from "../../lib/deviceId";
+import { supabase } from "../lib/supabase";
+import { getReporterId } from "../lib/deviceId";
 
 export default function ReportScreen() {
   const router = useRouter();
+
+  const params = useLocalSearchParams<{
+    editId?: string;
+    editProblem?: string;
+    editLocation?: string;
+    editDescription?: string;
+    editLatitude?: string;
+    editLongitude?: string;
+  }>();
+
+  const isEditing = Boolean(params.editId);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [problem, setProblem] = useState("");
@@ -29,6 +40,23 @@ export default function ReportScreen() {
 
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!params.editId) return;
+
+    setProblem(params.editProblem || "");
+    setLocation(params.editLocation || "");
+    setDescription(params.editDescription || "");
+    setLatitude(params.editLatitude ? Number(params.editLatitude) : null);
+    setLongitude(params.editLongitude ? Number(params.editLongitude) : null);
+  }, [
+    params.editId,
+    params.editProblem,
+    params.editLocation,
+    params.editDescription,
+    params.editLatitude,
+    params.editLongitude,
+  ]);
 
   const problems = [
     "🚱 No hay agua",
@@ -125,6 +153,51 @@ export default function ReportScreen() {
   };
 
   const submitReport = async () => {
+    if (isEditing && params.editId) {
+      setIsSubmitting(true);
+
+      try {
+        const reporterId = await getReporterId();
+
+        const { data, error } = await supabase.rpc(
+          "update_report",
+          {
+            p_report_id: params.editId,
+            p_reporter_id: reporterId,
+            p_problem_type: problem,
+            p_location: location,
+            p_description: description,
+            p_latitude: latitude,
+            p_longitude: longitude,
+          }
+        );
+
+        if (error) {
+          Alert.alert("Error", error.message);
+          return;
+        }
+
+        if (!data) {
+          Alert.alert(
+            "No se pudo actualizar",
+            "Solo quien creó el reporte puede corregirlo."
+          );
+          return;
+        }
+
+        Alert.alert("Listo", "Tu reporte fue corregido.");
+        router.back();
+      } catch (error: any) {
+        Alert.alert(
+          "Error",
+          error?.message || "No se pudo actualizar el reporte."
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+
+      return;
+    }
     if (!problem) {
       Alert.alert("Campo requerido", "Selecciona el problema del agua.");
       return;
@@ -204,7 +277,7 @@ export default function ReportScreen() {
       >
         <Text style={styles.icon}>🚰</Text>
 
-        <Text style={styles.title}>Reportar problema</Text>
+        <Text style={styles.title}>{isEditing ? "Corregir Reporte" : "Reportar problema"}</Text>
 
         <Text style={styles.subtitle}>
           Ayúdanos a identificar problemas de agua en tu comunidad.
@@ -289,7 +362,7 @@ export default function ReportScreen() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.submitButtonText}>
-                🚰 Enviar reporte
+                {isEditing ? "💾 Guardar cambios" : "🚰 Enviar reporte"}
               </Text>
             )}
           </Pressable>

@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { useRouter } from "expo-router";
 import {
   SafeAreaView,
@@ -9,6 +10,12 @@ import {
 } from "react-native";
 
 export default function HomeScreen() {
+  const [fontsLoaded] = useFonts({
+    Fredoka: require('../../assets/fonts/Fredoka.ttf'),
+  });
+
+  if (!fontsLoaded) return null;
+
   const router = useRouter();
 
   const handleTestPress = () => {
@@ -20,7 +27,10 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.icon}>🚰</Text>
 
-        <Text style={styles.title}>AguaPR</Text>
+        <View style={styles.logoText}>
+          <Text style={[styles.title, styles.waterTitle]}>AguaPR</Text>
+          <Text style={[styles.title, styles.waterTitle, styles.waterTitleBold]}>AguaPR</Text>
+        </View>
 
         <Text style={styles.subtitle}>
           Reporta problemas de agua{"\n"}
@@ -31,7 +41,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.7}
-            onPress={() => router.push("/(tabs)/report")}
+            onPress={() => router.push("/report")}
           >
             <Text style={styles.primaryButtonText}>
               🚰 Reportar problema de agua
@@ -78,9 +88,23 @@ const styles = StyleSheet.create({
     fontSize: 52,
     marginBottom: 8,
   },
+  logoText: {
+    position: "relative",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  waterTitle: {
+    fontFamily: 'Fredoka',
+    fontSize: 42,
+    color: "#1D4ED8",
+  },
+  waterTitleBold: {
+    position: "absolute",
+    left: 0.7,
+    top: 0.7,
+  },
   title: {
     fontSize: 42,
-    fontWeight: "800",
     color: "#1D4ED8",
     marginBottom: 12,
   },
