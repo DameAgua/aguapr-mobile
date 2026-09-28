@@ -1,4 +1,5 @@
-import { useRouter } from "expo-router";
+import React from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -62,7 +63,11 @@ export default function FeedScreen() {
       if (error) {
         Alert.alert("Error de Supabase", error.message);
       } else if (data) {
-        setReports(data as ReportItem[]);
+        const normalizedReports = data.map((item: any) => ({
+          ...item,
+          town: item["Pueblo o Municipalidad"] || "",
+        }));
+        setReports(normalizedReports as ReportItem[]);
       }
     } catch (err: any) {
       console.log("Error fetching feed:", err);
@@ -76,9 +81,13 @@ export default function FeedScreen() {
     getReporterId()
       .then(setCurrentReporterId)
       .catch((error) => console.log("Error loading reporter ID:", error));
-
-    fetchReports();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchReports();
+    }, [])
+  );
 
   useEffect(() => {
     if (currentReporterId) { console.log("ID-DIRECTO:", currentReporterId);
