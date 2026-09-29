@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   waterTitle: {
-    fontFamily: 'Fredoka',
-    fontSize: 42,
+    fontSize: 26,
+    fontWeight: "800",
     color: "#1D4ED8",
   },
   waterTitleBold: {
