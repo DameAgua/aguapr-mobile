@@ -89,11 +89,6 @@ export default function FeedScreen() {
     }, [])
   );
 
-  useEffect(() => {
-    if (currentReporterId) { console.log("ID-DIRECTO:", currentReporterId);
-      console.log("AGUAPR CURRENT REPORTER ID:", currentReporterId);
-    }
-  }, [currentReporterId]);
 
   const onRefresh = () => {
     setRefreshing(true);
